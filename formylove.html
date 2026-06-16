@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi Người Anh Thương</title>
+    <style>
+        /* Reset & Nền chung */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { 
+            width: 100%; height: 100%; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; background-color: #050510; color: #fff;
+        }
+
+        /* Định dạng các màn hình */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; transition: all 1s ease; opacity: 0; pointer-events: none;
+            z-index: 10;
+        }
+        .active { opacity: 1; pointer-events: auto; }
+
+        /* MÀN HÌNH 1: SẢNH CHỜ */
+        #lobby-screen {
+            background: radial-gradient(circle, #1a0b2e 0%, #050510 100%);
+        }
+        .btn-glow {
+            padding: 15px 35px; font-size: 1.2rem; font-weight: bold;
+            color: #fff; background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 65, 108, 0.6);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .btn-glow:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 65, 108, 0.9);
+        }
+
+        /* MÀN HÌNH 2: NHẬP MẬT KHẨU */
+        #password-screen {
+            background: #0a0a1a;
+        }
+        .pass-box {
+            background: rgba(255, 255, 255, 0.05); padding: 30px;
+            border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center; backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 90%; width: 400px;
+        }
+        .pass-box h3 { margin-bottom: 15px; color: #ff758c; font-size: 1.1rem; }
+        .pass-box input {
+            width: 100%; padding: 12px 20px; margin-bottom: 20px;
+            border: none; border-radius: 25px; background: rgba(255,255,255,0.1);
+            color: #fff; font-size: 1rem; text-align: center; outline: none;
+            border: 1px solid transparent; transition: 0.3s;
+        }
+        .pass-box input:focus { border-color: #ff416c; }
+        .btn-submit {
+            padding: 10px 25px; background: #ff416c; border: none;
+            border-radius: 20px; color: white; cursor: pointer; font-weight: bold;
+        }
+        .error-msg { color: #ff4b2b; font-size: 0.9rem; margin-top: 10px; display: none; }
+
+        /* MÀN HÌNH 3: TRANG CHÍNH CHỨA THƯ VÀ HIỆU ỨNG */
+        #main-screen {
+            background: black;
+        }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        
+        /* Khung bức thư */  
+      .letter-container {
+            position: relative; z-index: 2; max-width: 85%; width: 500px;
+            background: rgba(15, 10, 25, 0.75); padding: 35px;
+            border-radius: 20px; border: 1px solid rgba(255, 105, 180, 0.3);
+            backdrop-filter: blur(8px); text-align: center;
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.2);
+            animation: fadeInLetter 2s ease-out;
+        }
+        @keyframes fadeInLetter {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .letter-container h1 {
+            font-family: 'Georgia', serif; color: #ff69b4; margin-bottom: 20px;
+            font-size: 1.8rem; text-shadow: 0 0 10px rgba(255,105,180,0.5);
+        }
+        .letter-content {
+            font-size: 1.05rem; line-height: 1.8; color: #ffe4e1;
+            text-align: justify; white-space: pre-line;
+        }
+        .heart-icon { color: #ff416c; font-size: 1.5rem; margin-top: 15px; animation: pulse 1.2s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="lobby-screen" class="screen active">
+        <button class="btn-glow" onclick="goToPassword()">Bấm vào đây nè</button>
+    </div>
+
+    <div id="password-screen" class="screen">
+        <div class="pass-box">
+            <h3>Gợi ý mật khẩu:<br>Ngày đầu tiên 2 đứa quen nhau</h3>
+            <input type="text" id="password-input" placeholder="Nhập mật khẩu vào đây..." onkeypress="checkEnter(event)">
+            <button class="btn-submit" onclick="verifyPassword()">Xác nhận</button>
+            <p id="error-message" class="error-msg">Sai rồi công chúa ơi, nhập lại thử xem! ❤️</p>
+        </div>
+    </div>
+
+    <div id="main-screen" class="screen">
+        <canvas id="heartCanvas"></canvas>
+        <div class="letter-container">
+            <h1>Gửi Cậu, Điều Tuyệt Vời Nhất</h1>
+            <div class="letter-content">
+                Anh cảm ơn vì đã luôn ở bên cạnh anh, cùng anh sẻ chia những niềm vui và cả những áp lực trong cuộc sống. 
+
+                Giữa thế giới rộng lớn này, gặp được em và được yêu em là điều may mắn nhất của anh. Mong rằng hành trình phía trước của chúng mình sẽ luôn ngập tràn tiếng cười và hạnh phúc nhé!
+
+                Yêu em rất nhiều! ❤️
+            </div>
+            <div class="heart-icon">❤</div>
+        </div>
+    </div>
+
+    <script>
+        // CẤU HÌNH MẬT KHẨU CỦA BẠN TẠI ĐÂY (Viết thường, không dấu để người yêu dễ gõ đúng)
+        // Ví dụ nếu là ngày 14/02/2025 thì bạn có thể sửa thành "14022025" hoặc "14/02" tùy ý.
+        const CORRECT_PASSWORD = "15/02/2024";
+      function goToPassword() {
+            document.getElementById('lobby-screen').classList.remove('active');
+            document.getElementById('password-screen').classList.add('active');
+        }
+
+        function checkEnter(e) {
+            if(e.key === 'Enter') { verifyPassword(); }
+        }
+
+        function verifyPassword() {
+            const input = document.getElementById('password-input').value.trim().toLowerCase();
+            
+            // Chuyển đổi chuỗi tiếng Việt có dấu thành không dấu để tránh lỗi gõ Telex/Vni khác nhau
+            const cleanInput = input.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
+            const cleanTarget = CORRECT_PASSWORD.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d");
+
+            if(cleanInput === cleanTarget) {
+                document.getElementById('password-screen').classList.remove('active');
+                document.getElementById('main-screen').classList.add('active');
+                initEffects(); // Chạy hiệu ứng tim và sao
+            } else {
+                const err = document.getElementById('error-message');
+                err.style.display = 'block';
+                // Hiệu ứng rung rinh khi sai
+                err.style.animation = 'none';
+                setTimeout(() => err.style.animation = 'pulse 0.3s 2', 10);
+            }
+        }
+
+        // --- HỆ THỐNG XỬ LÝ CANVAS (TRIỆU TRÁI TIM & VÌ SAO SÁNG) ---
+        function initEffects() {
+            const canvas = document.getElementById('heartCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const hearts = [];
+            const stars = [];
+
+            // Khởi tạo các ngôi sao lấp lánh cố định/di chuyển nhẹ ở nền
+            for(let i = 0; i < 150; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5 + 0.5,
+                    alpha: Math.random(),
+                    speed: Math.random() * 0.02 + 0.01
+                });
+            }
+
+            // Hàm tạo một trái tim bay từ dưới lên
+            function createHeart() {
+                return {
+                    x: Math.random() * canvas.width,
+                    y: canvas.height + Math.random() * 100,
+                    size: Math.random() * 8 + 5,
+                    speedY: Math.random() * 1.5 + 0.8,
+                    speedX: Math.sin(Math.random() * Math.PI) * 0.5,
+                    alpha: Math.random() * 0.5 + 0.5,
+                    scaleSpeed: Math.random() * 0.02,
+                  hue: Math.random() * 30 + 340 // Tông màu hồng -> đỏ hồng
+                };
+            }
+
+            // Điền sẵn một lượng tim ban đầu để màn hình ngập tràn ngay
+            for(let i = 0; i < 100; i++) {
+                let h = createHeart();
+                h.y = Math.random() * canvas.height; // Phân bố đều màn hình lúc đầu
+                hearts.push(h);
+            }
+
+            // Vẽ hình trái tim bằng Bezier Curve
+            function drawHeart(x, y, size, color) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.translate(x, y);
+                ctx.moveTo(0, 0);
+                // Vẽ nửa bên trái
+                ctx.bezierCurveTo(-size / 2, -size / 2, -size, size / 3, 0, size);
+                // Vẽ nửa bên phải
+                ctx.bezierCurveTo(size, size / 3, size / 2, -size / 2, 0, 0);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 1. Vẽ các vì sao
+                stars.forEach(s => {
+                    s.alpha += s.speed;
+                    if(s.alpha > 1 || s.alpha < 0) s.speed = -s.speed; // Tạo hiệu ứng nhấp nháy
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(s.alpha)})`;
+                    ctx.beginPath();
