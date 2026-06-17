@@ -111,7 +111,13 @@
         // CẤU HÌNH MẬT KHẨU (Bạn đổi chữ "ngay dau tien" thành mật khẩu bạn muốn nhé)
         const CORRECT_PASSWORD = "1810"; 
 
-        function goToPassword() {
+       function goToPassword() {
+            // Kích hoạt phát nhạc nền ẩn
+            const music = document.getElementById('bg-music');
+            if (music) {
+                music.play().catch(error => console.log("Trình duyệt chặn autoplay, cần tương tác thêm:", error));
+            }
+            
             document.getElementById('lobby-screen').classList.remove('active');
             document.getElementById('password-screen').classList.add('active');
         }
