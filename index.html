@@ -170,11 +170,22 @@
             "Hãy chạm vào trái tim để mở nó nhé... ❤️"
         ];
 
-        function goToPassword() {
-            const music = document.getElementById('bg-music');
-            if (music) { music.play().catch(e => console.log(e)); }
+       function goToPassword() {
+            // Chuyển màn hình trước để không bao giờ bị kẹt nút
             document.getElementById('lobby-screen').classList.remove('active');
             document.getElementById('password-screen').classList.add('active');
+            
+            // Thử bật nhạc sau, lỗi hay không cũng không ảnh hưởng đến giao diện
+            try {
+                const music = document.getElementById('bg-music');
+                if (music) {
+                    music.play().catch(function(e) {
+                        console.log("Trình duyệt chặn phát nhạc tự động: ", e);
+                    });
+                }
+            } catch(err) {
+                console.log("Lỗi file nhạc: ", err);
+            }
         }
 
         function checkEnter(e) { if(e.key === 'Enter') { verifyPassword(); } }
